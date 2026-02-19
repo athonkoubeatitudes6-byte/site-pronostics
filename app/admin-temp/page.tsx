@@ -1,80 +1,126 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState<string | null>(null);
+  const [date, setDate] = useState("");
+  const [temps, setTemps] = useState("");
+  const [equipeA, setEquipeA] = useState("");
+  const [equipeB, setEquipeB] = useState("");
+  const [prediction, setPrediction] = useState("");
+  const [isVip, setIsVip] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const { data } = await supabase.auth.getUser();
+  const handleAddMatch = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
 
-      const userEmail = data.user?.email || null;
-      setEmail(userEmail);
+    const { error } = await supabase.from("Matches").insert([
+      {
+        date,
+        temps,
+        équipes: equipeA,
+        équipeb: equipeB,
+        prédiction: prediction,
+        isvip: isVip,
+      },
+    ]);
 
-      // 👉 remplace par TON email Google admin
-      const ADMIN_EMAIL = "beatitudeathonkou7@gmail.com";
+    if (error) {
+      setMessage("❌ Erreur lors de l'ajout");
+      console.log(error);
+    } else {
+      setMessage("✅ Match ajouté !");
+      setDate("");
+      setTemps("");
+      setEquipeA("");
+      setEquipeB("");
+      setPrediction("");
+      setIsVip(false);
+    }
 
-      if (!userEmail) {
-        router.push("/login");
-        return;
-      }
-
-      if (userEmail !== ADMIN_EMAIL) {
-        router.push("/dashboard");
-        return;
-      }
-
-      setLoading(false);
-    };
-
-    checkAdmin();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        Vérification admin...
-      </div>
-    );
-  }
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-3xl font-bold text-yellow-400 mb-6">
-        👑 Panneau Admin
-      </h1>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+      <div className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md">
+        <h1 className="text-2xl font-bold text-yellow-400 mb-6 text-center">
+          Panneau Admin
+        </h1>
 
-      <p className="text-gray-300 mb-8">
-        Connecté en tant que : {email}
-      </p>
+        <form onSubmit={handleAddMatch} className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="Date (ex: 20/02/2026)"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
 
-      <div className="grid gap-4 max-w-md">
-        <button
-          onClick={() => router.push("/admin/ajouter-match")}
-          className="bg-yellow-500 text-black py-3 rounded-lg font-semibold hover:bg-yellow-400"
-        >
-          ➕ Ajouter un match
-        </button>
+          <input
+            type="text"
+            placeholder="Heure (ex: 18:00)"
+            value={temps}
+            onChange={(e) => setTemps(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
 
-        <button
-          onClick={() => router.push("/historique")}
-          className="bg-zinc-800 py-3 rounded-lg font-semibold hover:bg-zinc-700"
-        >
-          📊 Voir historique
-        </button>
+          <input
+            type="text"
+            placeholder="Equipe A"
+            value={equipeA}
+            onChange={(e) => setEquipeA(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
 
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="bg-zinc-800 py-3 rounded-lg font-semibold hover:bg-zinc-700"
-        >
-          ⬅ Retour dashboard
-        </button>
+          <input
+            type="text"
+            placeholder="Equipe B"
+            value={equipeB}
+            onChange={(e) => setEquipeB(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
+
+          <input
+            type="text"
+            placeholder="Prédiction"
+            value={prediction}
+            onChange={(e) => setPrediction(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
+
+          {/* Switch VIP */}
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isVip}
+              onChange={(e) => setIsVip(e.target.checked)}
+            />
+            Match VIP
+          </label>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-yellow-500 text-black py-3 rounded-lg font-semibold hover:bg-yellow-400 transition"
+          >
+            {loading ? "Ajout..." : "Ajouter le match"}
+          </button>
+        </form>
+
+        {message && (
+          <p className="mt-4 text-center text-sm text-gray-300">{message}</p>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
