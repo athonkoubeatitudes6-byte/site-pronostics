@@ -8,7 +8,7 @@ import { useEffect } from "react";
 export default function DashboardPage() {
   const router = useRouter();
 
-  // ✅ Vérifie si utilisateur connecté
+  // Vérifie si utilisateur connecté
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
@@ -21,7 +21,7 @@ export default function DashboardPage() {
     checkUser();
   }, [router]);
 
-  // ✅ Déconnexion
+  // Déconnexion
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -63,10 +63,10 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* ✅ Bouton admin discret */}
+      {/* Bouton admin discret */}
       <div className="fixed bottom-4 right-4">
         <button
-          onClick={() => router.push("/admin")}
+          onClick={() => router.push("/admin-temp")}
           className="flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-zinc-800 text-gray-400 hover:text-white hover:bg-zinc-700 transition"
         >
           ⚙ Admin
