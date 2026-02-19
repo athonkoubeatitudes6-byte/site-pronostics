@@ -7,23 +7,25 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const router = useRouter();
 
+  // ✅ Vérifie si déjà connecté
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
 
       if (data.session) {
-        router.push("/dashboard");
+        router.replace("/dashboard");
       }
     };
 
     checkUser();
   }, [router]);
 
+  // ✅ Connexion Google
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     });
   };

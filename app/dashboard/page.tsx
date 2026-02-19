@@ -3,10 +3,25 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const router = useRouter();
 
+  // ✅ Vérifie si utilisateur connecté
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+
+      if (!data.session) {
+        router.replace("/login");
+      }
+    };
+
+    checkUser();
+  }, [router]);
+
+  // ✅ Déconnexion
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -19,7 +34,6 @@ export default function DashboardPage() {
       </h1>
 
       <div className="grid gap-6 w-full max-w-md">
-        {/* Matchs gratuits */}
         <Link
           href="/gratuit"
           className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-4 rounded-xl text-center transition"
@@ -27,7 +41,6 @@ export default function DashboardPage() {
           Matchs gratuits
         </Link>
 
-        {/* Matchs VIP */}
         <Link
           href="/vip"
           className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 rounded-xl text-center transition"
@@ -35,7 +48,6 @@ export default function DashboardPage() {
           Matchs VIP
         </Link>
 
-        {/* Historique */}
         <Link
           href="/historique"
           className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-xl text-center transition"
@@ -43,7 +55,6 @@ export default function DashboardPage() {
           Historique
         </Link>
 
-        {/* Déconnexion */}
         <button
           onClick={handleLogout}
           className="bg-red-600 hover:bg-red-700 text-white font-semibold py-4 rounded-xl transition"
@@ -51,16 +62,16 @@ export default function DashboardPage() {
           Se déconnecter
         </button>
       </div>
-     {/* Bouton admin discret */}
-<div className="fixed bottom-4 right-4">
-  <button
-    onClick={() => (window.location.href = "/admin")}
-    className="flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-zinc-800 text-gray-400 hover:text-white hover:bg-zinc-700 transition"
-  >
-    ⚙ Admin
-  </button>
-</div>
- 
+
+      {/* ✅ Bouton admin discret */}
+      <div className="fixed bottom-4 right-4">
+        <button
+          onClick={() => router.push("/admin")}
+          className="flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-zinc-800 text-gray-400 hover:text-white hover:bg-zinc-700 transition"
+        >
+          ⚙ Admin
+        </button>
+      </div>
     </div>
   );
 }
