@@ -18,10 +18,10 @@ export default function AdminPage() {
     setLoading(true);
     setMessage("");
 
-    const { error } = await supabase.from("Matches").insert([
+    const { error } = await supabase.from("matchs").insert([
       {
-        date,
-        temps,
+        date: date,
+        temps: temps,
         équipes: equipeA,
         équipeb: equipeB,
         prédiction: prediction,
@@ -30,8 +30,8 @@ export default function AdminPage() {
     ]);
 
     if (error) {
-      setMessage("❌ Erreur lors de l'ajout");
       console.log(error);
+      setMessage("❌ " + error.message);
     } else {
       setMessage("✅ Match ajouté !");
       setDate("");
@@ -55,7 +55,7 @@ export default function AdminPage() {
         <form onSubmit={handleAddMatch} className="flex flex-col gap-4">
           <input
             type="text"
-            placeholder="Date (ex: 20/02/2026)"
+            placeholder="Date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="p-3 rounded-lg bg-zinc-800"
@@ -64,7 +64,7 @@ export default function AdminPage() {
 
           <input
             type="text"
-            placeholder="Heure (ex: 18:00)"
+            placeholder="Heure"
             value={temps}
             onChange={(e) => setTemps(e.target.value)}
             className="p-3 rounded-lg bg-zinc-800"
@@ -98,7 +98,6 @@ export default function AdminPage() {
             required
           />
 
-          {/* Switch VIP */}
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
