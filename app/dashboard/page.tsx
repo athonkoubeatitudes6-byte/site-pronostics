@@ -1,77 +1,122 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
-export default function DashboardPage() {
-  const router = useRouter();
+export default function AdminPage() {
+  const [date, setDate] = useState("");
+  const [temps, setTemps] = useState("");
+  const [equipeA, setEquipeA] = useState("");
+  const [equipeB, setEquipeB] = useState("");
+  const [prediction, setPrediction] = useState("");
+  const [isVip, setIsVip] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Vérifie si utilisateur connecté
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
+  const handleAddMatch = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
 
-      if (!data.session) {
-        router.replace("/login");
-      }
-    };
+    const { error } = await supabase.from("matches").insert([
+      {
+        equipe1: equipeA,
+        equipe2: equipeB,
+        date: date,
+        pronostic: prediction,
+        type: isVip ? "vip" : "free",
+      },
+    ]);
 
-    checkUser();
-  }, [router]);
+    if (error) {
+      console.error(error);
+      setMessage("❌ Erreur lors de l'ajout");
+    } else {
+      setMessage("✅ Match ajouté !");
+      setDate("");
+      setTemps("");
+      setEquipeA("");
+      setEquipeB("");
+      setPrediction("");
+      setIsVip(false);
+    }
 
-  // Déconnexion
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold text-yellow-400 mb-10">
-        Tableau de bord
-      </h1>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+      <div className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md">
+        <h1 className="text-2xl font-bold text-yellow-400 mb-6 text-center">
+          Panneau Admin
+        </h1>
 
-      <div className="grid gap-6 w-full max-w-md">
-        <Link
-          href="/gratuit"
-          className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-4 rounded-xl text-center transition"
-        >
-          Matchs gratuits
-        </Link>
+        <form onSubmit={handleAddMatch} className="flex flex-col gap-4">
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
 
-        <Link
-          href="/vip"
-          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 rounded-xl text-center transition"
-        >
-          Matchs VIP
-        </Link>
+          <input
+            type="text"
+            placeholder="Heure (ex: 18:00)"
+            value={temps}
+            onChange={(e) => setTemps(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+          />
 
-        <Link
-          href="/historique"
-          className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-xl text-center transition"
-        >
-          Historique
-        </Link>
+          <input
+            type="text"
+            placeholder="Equipe 1"
+            value={equipeA}
+            onChange={(e) => setEquipeA(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
 
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white font-semibold py-4 rounded-xl transition"
-        >
-          Se déconnecter
-        </button>
+          <input
+            type="text"
+            placeholder="Equipe 2"
+            value={equipeB}
+            onChange={(e) => setEquipeB(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
+
+          <input
+            type="text"
+            placeholder="Prédiction"
+            value={prediction}
+            onChange={(e) => setPrediction(e.target.value)}
+            className="p-3 rounded-lg bg-zinc-800"
+            required
+          />
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isVip}
+              onChange={(e) => setIsVip(e.target.checked)}
+            />
+            Match VIP
+          </label>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-yellow-500 text-black py-3 rounded-lg font-semibold hover:bg-yellow-400 transition"
+          >
+            {loading ? "Ajout..." : "Ajouter le match"}
+          </button>
+        </form>
+
+        {message && (
+          <p className="mt-4 text-center text-sm text-gray-300">{message}</p>
+        )}
       </div>
-
-      {/* Bouton admin discret */}
-      <div className="fixed bottom-4 right-4">
-        <button
-          onClick={() => router.push("/admin-temp")}
-          className="flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-zinc-800 text-gray-400 hover:text-white hover:bg-zinc-700 transition"
-        >
-          ⚙ Admin
-        </button>
-      </div>
-    </div>
+    </main>
   );
 }
